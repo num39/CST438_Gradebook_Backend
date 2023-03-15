@@ -169,6 +169,7 @@ public class GradeBookController {
         java.util.Date date = sdf1.parse(format); 
         java.sql.Date sqlStartDate = new java.sql.Date(date.getTime());  
 	    assign.setDueDate(sqlStartDate);
+	    assign.setNeedsGrading(1);
 	    }
 	    catch(ParseException e)
 	    {
