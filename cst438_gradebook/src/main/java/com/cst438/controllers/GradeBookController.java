@@ -17,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.cst438.domain.Assignment;
 import com.cst438.domain.AssignmentListDTO;
+import com.cst438.domain.AssignmentListDTO.AssignmentDTO;
 import com.cst438.domain.AssignmentGrade;
 import com.cst438.domain.AssignmentGradeRepository;
 import com.cst438.domain.AssignmentRepository;
@@ -26,7 +27,8 @@ import com.cst438.domain.CourseRepository;
 import com.cst438.domain.Enrollment;
 import com.cst438.domain.GradebookDTO;
 import com.cst438.services.RegistrationService;
-
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 @RestController
 @CrossOrigin(origins = {"http://localhost:3000","http://localhost:3001"})
 public class GradeBookController {
@@ -47,8 +49,7 @@ public class GradeBookController {
 	@GetMapping("/gradebook")
 	public AssignmentListDTO getAssignmentsNeedGrading( ) {
 		
-		String email = "dwisneski@csumb.edu";  // user name (should be instructor's email) 
-		
+		String email = "dwisneski@csumb.edu";  // user name (should be instructor's email)
 		List<Assignment> assignments = assignmentRepository.findNeedGradingByEmail(email);
 		AssignmentListDTO result = new AssignmentListDTO();
 		for (Assignment a: assignments) {
@@ -155,7 +156,60 @@ public class GradeBookController {
 		}
 		
 	}
+	@PostMapping("/assignment/new")
+	@Transactional
+	public void addAssignment(@RequestBody AssignmentDTO newAssignment){
+
+	    Assignment assign = new Assignment();
+	    System.out.println(newAssignment.toString());
+	    assign.setName(newAssignment.assignmentName);
+	    try {
+	    String format = newAssignment.dueDate; 
+        SimpleDateFormat sdf1 = new SimpleDateFormat("dd-MM-yyyy");
+        java.util.Date date = sdf1.parse(format); 
+        java.sql.Date sqlStartDate = new java.sql.Date(date.getTime());  
+	    assign.setDueDate(sqlStartDate);
+	    }
+	    catch(ParseException e)
+	    {
+	    	System.out.println("DeBUG Purpose");
+	    	e.printStackTrace();
+	    }
+	    assignmentRepository.save(assign);
+	}
 	
+	@PostMapping("/assignment/delete/{id}")
+	@Transactional
+	public void deleteAssignment(@PathVariable("id") Integer assignmentId) throws Exception{
+			Assignment dAssign = assignmentRepository.findById(assignmentId).orElse(null);
+			
+			if(dAssign.equals(null))
+			{
+				throw new Exception("Exception Thrown - assignment not found");
+			}
+			else
+				assignmentRepository.delete(dAssign);
+	    
+	}	
+	
+	@PutMapping("/assignment/update/{id}")
+	@Transactional
+	public void updateAssignmentName (@RequestBody AssignmentDTO changeAssignment, @PathVariable("id") Integer assignmentId ) throws Exception
+	{
+		
+		Assignment dAssign = assignmentRepository.findById(assignmentId).orElse(null);
+		
+		if(dAssign.equals(null))
+		{
+			throw new Exception("Exception Thrown - assignment not found");
+		}
+		else
+		{
+			dAssign.setName(changeAssignment.assignmentName);
+			assignmentRepository.save(dAssign);
+		}
+}
+		
 	private Assignment checkAssignment(int assignmentId, String email) {
 		// get assignment 
 		Assignment assignment = assignmentRepository.findById(assignmentId).orElse(null);
