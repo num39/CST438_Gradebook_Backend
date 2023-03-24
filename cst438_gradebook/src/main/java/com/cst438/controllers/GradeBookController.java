@@ -27,6 +27,8 @@ import com.cst438.domain.CourseRepository;
 import com.cst438.domain.Enrollment;
 import com.cst438.domain.GradebookDTO;
 import com.cst438.services.RegistrationService;
+
+import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 @RestController
@@ -162,20 +164,9 @@ public class GradeBookController {
 
 	    Assignment assign = new Assignment();
 	    System.out.println(newAssignment.toString());
-	    assign.setName(newAssignment.assignmentName);
-	    try {
-	    String format = newAssignment.dueDate; 
-        SimpleDateFormat sdf1 = new SimpleDateFormat("dd-MM-yyyy");
-        java.util.Date date = sdf1.parse(format); 
-        java.sql.Date sqlStartDate = new java.sql.Date(date.getTime());  
-	    assign.setDueDate(sqlStartDate);
-	    assign.setNeedsGrading(1);
-	    }
-	    catch(ParseException e)
-	    {
-	    	System.out.println("DeBUG Purpose");
-	    	e.printStackTrace();
-	    }
+	    assign.setName(newAssignment.name);
+	    assign.setDueDate(Date.valueOf(newAssignment.dueDate));
+	    assign.setNeedsGrading(1); 
 	    assignmentRepository.save(assign);
 	}
 	
@@ -206,7 +197,7 @@ public class GradeBookController {
 		}
 		else
 		{
-			dAssign.setName(changeAssignment.assignmentName);
+			dAssign.setName(changeAssignment.name);
 			assignmentRepository.save(dAssign);
 		}
 }
